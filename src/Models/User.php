@@ -1,28 +1,17 @@
 <?php
-
 namespace App\Models;
 
-use App\Controllers\LinkController;
-use App\Utils\{
-    Tools,
-    Hash,
-    GA,
-    Telegram,
-    URL
-};
-use App\Services\{Config, Mail};
-use Ramsey\Uuid\Uuid;
 use Exception;
+use App\Services\Config;
+use App\Services\Mail;
+use App\Utils\GA;
+use App\Utils\Hash;
+use App\Utils\Telegram;
+use App\Utils\Tools;
+use App\Utils\URL;
+use Ramsey\Uuid\Uuid;
+use App\Controllers\LinkController;
 
-/**
- * User Model
- *
- * @property-read   int     $id         ID
- * @todo More property
- * @property        bool    $is_admin           是否管理员
- * @property        bool    $expire_notified    If user is notified for expire
- * @property        bool    $traffic_notified   If user is noticed for low traffic
- */
 class User extends Model
 {
     protected $connection = 'default';
@@ -121,7 +110,7 @@ class User extends Model
      */
     public function lastSsTime(): string
     {
-        return $this->t == 0 ? '从未使用喵' : Tools::toDateTime($this->t);
+        return $this->t == 0 ? '没有记录' : Tools::toDateTime($this->t);
     }
 
     /**
@@ -452,9 +441,6 @@ class User extends Model
         $uid   = $this->id;
         $email = $this->email;
 
-        Bought::where('userid', '=', $uid)->delete();
-        Code::where('userid', '=', $uid)->delete();
-        DetectBanLog::where('user_id', '=', $uid)->delete();
         DetectLog::where('user_id', '=', $uid)->delete();
         EmailVerify::where('email', $email)->delete();
         InviteCode::where('user_id', '=', $uid)->delete();
@@ -464,7 +450,6 @@ class User extends Model
         PasswordReset::where('email', '=', $email)->delete();
         TelegramSession::where('user_id', '=', $uid)->delete();
         Token::where('user_id', '=', $uid)->delete();
-        UnblockIp::where('userid', '=', $uid)->delete();
         UserSubscribeLog::where('user_id', '=', $uid)->delete();
 
         $this->delete();
@@ -477,8 +462,7 @@ class User extends Model
      */
     public function get_top_up(): float
     {
-        $number = Code::where('userid', $this->id)->sum('number');
-        return is_null($number) ? 0.00 : round($number, 2);
+        return 0.00;
     }
 
     /**
@@ -488,24 +472,7 @@ class User extends Model
      */
     public function calIncome(string $req): float
     {
-        switch ($req) {
-            case "yesterday":
-                $number = Code::whereDate('usedatetime', '=', date('Y-m-d', strtotime('-1 days')))->sum('number');
-                break;
-            case "today":
-                $number = Code::whereDate('usedatetime', '=', date('Y-m-d'))->sum('number');
-                break;
-            case "this month":
-                $number = Code::whereYear('usedatetime', '=', date('Y'))->whereMonth('usedatetime', '=', date('m'))->sum('number');
-                break;
-            case "last month":
-                $number = Code::whereYear('usedatetime', '=', date('Y'))->whereMonth('usedatetime', '=', date('m', strtotime('last month')))->sum('number');
-                break;
-            default:
-                $number = Code::sum('number');
-                break;
-        }
-        return is_null($number) ? 0.00 : round($number, 2);
+        return 0.00;
     }
 
     /**
@@ -521,20 +488,7 @@ class User extends Model
      */
     public function disableReason(): string
     {
-        $reason_id = DetectLog::where('user_id', $this->id)->orderBy('id', 'DESC')->first();
-        $reason    = DetectRule::find($reason_id->list_id);
-        if (is_null($reason)) {
-            return '特殊原因被禁用，了解详情请联系管理员';
-        }
-        return $reason->text;
-    }
-
-    /**
-     * 最后一次被封禁的时间
-     */
-    public function last_detect_ban_time(): string
-    {
-        return ($this->last_detect_ban_time == '1989-06-04 00:05:00' ? '未被封禁过' : $this->last_detect_ban_time);
+        return '你的账户被管理员停用了';
     }
 
     /**
@@ -542,13 +496,7 @@ class User extends Model
      */
     public function relieve_time(): string
     {
-        $logs = DetectBanLog::where('user_id', $this->id)->orderBy('id', 'desc')->first();
-        if ($this->enable == 0 && $logs != null) {
-            $time = ($logs->end_time + $logs->ban_time * 60);
-            return date('Y-m-d H:i:s', $time);
-        } else {
-            return '当前未被封禁';
-        }
+        return '当前未被封禁';
     }
 
     /**
@@ -556,7 +504,7 @@ class User extends Model
      */
     public function detect_ban_number(): int
     {
-        return DetectBanLog::where('user_id', $this->id)->count();
+        return 0;
     }
 
     /**
@@ -564,31 +512,7 @@ class User extends Model
      */
     public function user_detect_ban_number(): int
     {
-        $logs = DetectBanLog::where('user_id', $this->id)->orderBy('id', 'desc')->first();
-        return $logs->detect_number;
-    }
-
-    /**
-     * 签到
-     */
-    public function checkin(): array
-    {
-        $return = [
-            'ok'  => true,
-            'msg' => ''
-        ];
-        if (!$this->isAbleToCheckin()) {
-            $return['ok']  = false;
-            $return['msg'] = '您似乎已经签到过了...';
-        } else {
-            $traffic = random_int((int) $_ENV['checkinMin'], (int) $_ENV['checkinMax']);
-            $this->transfer_enable += Tools::toMB($traffic);
-            $this->last_check_in_time = time();
-            $this->save();
-            $return['msg'] = '获得了 ' . $traffic . 'MB 流量.';
-        }
-
-        return $return;
+        return 0;
     }
 
     /**
@@ -683,27 +607,11 @@ class User extends Model
             'ok'  => true,
             'msg' => '解绑成功.'
         ];
+
         $telegram_id = $this->telegram_id;
         $this->telegram_id = 0;
-        if ($this->save()) {
-            if (
-                $_ENV['enable_telegram'] === true
-                &&
-                Config::getconfig('Telegram.bool.group_bound_user') === true
-                &&
-                Config::getconfig('Telegram.bool.unbind_kick_member') === true
-                &&
-                !$this->is_admin
-            ) {
-                \App\Utils\Telegram\TelegramTools::SendPost(
-                    'kickChatMember',
-                    [
-                        'chat_id'   => $_ENV['telegram_chatid'],
-                        'user_id'   => $telegram_id,
-                    ]
-                );
-            }
-        } else {
+
+        if (!$this->save()) {
             $return = [
                 'ok'  => false,
                 'msg' => '解绑失败.'
@@ -740,14 +648,6 @@ class User extends Model
      */
     public function ResetPort(): array
     {
-        $price = $_ENV['port_price'];
-        if ($this->money < $price) {
-            return [
-                'ok'  => false,
-                'msg' => '余额不足'
-            ];
-        }
-        $this->money -= $price;
         $Port = Tools::getAvPort();
         $this->setPort($Port);
         $this->save();
@@ -758,80 +658,11 @@ class User extends Model
     }
 
     /**
-     * 指定端口
-     *
-     * @param int $Port
-     */
-    public function SpecifyPort($Port): array
-    {
-        $price = $_ENV['port_price_specify'];
-        if ($this->money < $price) {
-            return [
-                'ok'  => false,
-                'msg' => '余额不足'
-            ];
-        }
-        if ($Port < $_ENV['min_port'] || $Port > $_ENV['max_port'] || Tools::isInt($Port) == false) {
-            return [
-                'ok'  => false,
-                'msg' => '端口不在要求范围内'
-            ];
-        }
-        $PortOccupied = User::pluck('port')->toArray();
-        if (in_array($Port, $PortOccupied) == true) {
-            return [
-                'ok'  => false,
-                'msg' => '端口已被占用'
-            ];
-        }
-        $this->money -= $price;
-        $this->setPort($Port);
-        $this->save();
-        return [
-            'ok'  => true,
-            'msg' => '钦定成功'
-        ];
-    }
-
-    /**
      * 用户下次流量重置时间
      */
     public function valid_use_loop(): string
     {
-        $boughts = Bought::where('userid', $this->id)->orderBy('id', 'desc')->get();
-        $data = [];
-        foreach ($boughts as $bought) {
-            $shop = $bought->shop();
-            if ($shop != null && $bought->valid()) {
-                $data[] = $bought->reset_time();
-            }
-        }
-        if (count($data) == 0) {
-            return '未购买套餐.';
-        }
-        if (count($data) == 1) {
-            return $data[0];
-        }
-        return '多个有效套餐无法显示.';
-    }
-
-    /**
-     * 手动修改用户余额时增加充值记录，受限于 Config
-     *
-     * @param mixed $total 金额
-     */
-    public function addMoneyLog($total): void
-    {
-        if ($_ENV['money_from_admin'] && $total != 0) {
-            $codeq              = new Code();
-            $codeq->code        = ($total > 0 ? '管理员赏赐' : '管理员惩戒');
-            $codeq->isused      = 1;
-            $codeq->type        = -1;
-            $codeq->number      = $total;
-            $codeq->usedatetime = date('Y-m-d H:i:s');
-            $codeq->userid      = $this->id;
-            $codeq->save();
-        }
+        return '请前往用户中心查看';
     }
 
     /**
