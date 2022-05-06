@@ -1,20 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-/***
+/*
  * Mail Service
  */
 
 use App\Models\Setting;
 use App\Services\Mail\Mailgun;
+use App\Services\Mail\NullMail;
+use App\Services\Mail\SendGrid;
 use App\Services\Mail\Ses;
 use App\Services\Mail\Smtp;
-use App\Services\Mail\SendGrid;
-use App\Services\Mail\NullMail;
 use Smarty;
 
-class Mail
+final class Mail
 {
     /**
      * @return Mailgun|NullMail|SendGrid|Ses|Smtp|null
@@ -39,11 +41,12 @@ class Mail
     /**
      * @param $template
      * @param $ary
+     *
      * @return mixed
      */
     public static function genHtml($template, $ary)
     {
-        $smarty = new smarty();
+        $smarty = new Smarty();
         $smarty->settemplatedir(BASE_PATH . '/resources/email/');
         $smarty->setcompiledir(BASE_PATH . '/storage/framework/smarty/compile/');
         $smarty->setcachedir(BASE_PATH . '/storage/framework/smarty/cache/');
@@ -61,6 +64,7 @@ class Mail
      * @param $template
      * @param $ary
      * @param $files
+     *
      * @return bool|void
      */
     public static function send($to, $subject, $template, $ary = [], $files = [])

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Setting;
 use App\Services\Gateway\CoinPay;
 
-class CoinPayment
+final class CoinPayment
 {
     public static function getClient()
     {
@@ -26,7 +28,7 @@ class CoinPayment
     public static function purchaseHTML()
     {
         $coinpay_secret = Setting::obtain('coinpay_secret');
-        if (self::getClient() != null && $coinpay_secret != '') {
+        if (self::getClient() !== null && $coinpay_secret !== '') {
             return self::getClient()->getPurchaseHTML();
         }
 

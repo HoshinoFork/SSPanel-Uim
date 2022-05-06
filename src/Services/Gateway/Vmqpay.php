@@ -1,43 +1,52 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Gateway;
 
-use App\Services\Auth;
 use App\Models\Paylist;
 use App\Models\Setting;
+use App\Services\Auth;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
-class Vmqpay extends AbstractPayment
+final class Vmqpay extends AbstractPayment
 {
-
-    public static function _name()
+    public static function _name(): string
     {
         return 'vmqpay';
     }
 
-    public static function _enable()
+    public static function _enable(): bool
     {
         return self::getActiveGateway('vmqpay');
     }
 
-    public function purchase($request, $response, $args)
+    public static function _readableName(): string
+    {
+        return 'Vmq 支付';
+    }
+
+    public function purchase(Request $request, Response $response, array $args): ResponseInterface
     {
         $trade_no = time();
         $user = Auth::getUser();
         $configs = Setting::getClass('vmq');
-        
+
         $param = $user->id;
         $key = $configs['vmq_key'];
         $gateway = $configs['vmq_gateway'];
         $type = $request->getParam('type');
         $price = $request->getParam('price');
         $sign = md5($trade_no.$param.$type.$price.$key);
-        
+
         $pl = new Paylist();
         $pl->userid = $user->id;
         $pl->total = $price;
         $pl->tradeno = $trade_no;
         $pl->save();
-        
+
         $params = [
             'payId' => $trade_no,
             'type' => $type,
@@ -46,14 +55,14 @@ class Vmqpay extends AbstractPayment
             'param' => $param,
             'isHtml' => '1',
             'notifyUrl' => self::getCallbackUrl(),
-            'returnUrl' => $_ENV['baseUrl'] . '/user/code'
+            'returnUrl' => $_ENV['baseUrl'] . '/user/code',
         ];
-        
+
         $pay_url = $gateway . '/createOrder?' . http_build_query($params);
-        header('Location: ' . $pay_url);
+        return $response->withRedirect($pay_url);
     }
-	
-    public function notify($request, $response, $args)
+
+    public function notify($request, $response, $args): ResponseInterface
     {
         $key = Setting::obtain('vmq_key');
         $payId = $request->getParam('payId');
@@ -62,18 +71,18 @@ class Vmqpay extends AbstractPayment
         $price = $request->getParam('price');
         $reallyPrice = $request->getParam('reallyPrice');
         $cloud_sign = $request->getParam('sign');
-        
-        $local_sign =  md5($payId.$param.$type.$price.$reallyPrice.$key);
-        
-        if ($cloud_sign != $local_sign) {
-            die("error_sign");
+
+        $local_sign = md5($payId.$param.$type.$price.$reallyPrice.$key);
+
+        if ($cloud_sign !== $local_sign) {
+            die('error_sign');
         }
-		
-        $this->postPayment($payId, "在线支付 $payId");
-        die("success");
+
+        $this->postPayment($payId, "在线支付 ${payId}");
+        die('success');
     }
-	
-    public static function getPurchaseHTML()
+
+    public static function getPurchaseHTML(): string
     {
         return '
             <div class="card-inner">
@@ -87,15 +96,4 @@ class Vmqpay extends AbstractPayment
             </div>
         ';
     }
-	
-    public function getReturnHTML($request, $response, $args)
-    {
-        // TODO: Implement getReturnHTML() method.
-    }
-
-    public function getStatus($request, $response, $args)
-    {
-        // TODO: Implement getStatus() method.
-    }
-
 }

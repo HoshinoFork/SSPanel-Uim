@@ -106,9 +106,9 @@
                                 <div class="nodemiddle node-flex">
                                     <div class="nodetype">
                                         {if $user->node_connector!=0}
-                                            <dd>{$user->online_ip_count()} / {$user->node_connector}</dd>
+                                            <dd>{$user->onlineIpCount()} / {$user->node_connector}</dd>
                                         {else}
-                                            <dd>{$user->online_ip_count()} / 不限制</dd>
+                                            <dd>{$user->onlineIpCount()} / 不限制</dd>
                                         {/if}
                                     </div>
                                 </div>
@@ -163,8 +163,8 @@
                         <div class="card-main">
                         <div class="card-inner margin-bottom-no">
                             <p class="card-heading" style="margin-bottom: 0;"><i class="icon icon-md">account_circle</i>流量使用情况</p>
-                                {if $user->valid_use_loop() != '未购买套餐.'}
-                                <p>下次流量重置时间：{$user->valid_use_loop()}</p>
+                                {if $user->validUseLoop() != '未购买套餐.'}
+                                <p>下次流量重置时间：{$user->validUseLoop()}</p>
                                 {/if}
                                 <div class="progressbar">
                                     <div class="before"></div>
@@ -174,7 +174,7 @@
                                         <div class="label la-top">
                                             <div class="bar ard color3"></div>
                                             <span class="traffic-info">今日已用</span>
-                                            <code class="card-tag tag-red">{$user->TodayusedTraffic()}</code>
+                                            <code class="card-tag tag-red">{$user->todayUsedTraffic()}</code>
                                         </div>
                                     </div>
                                 </div>
@@ -188,7 +188,7 @@
                                         <div class="label la-top">
                                             <div class="bar ard color2"><span></span></div>
                                             <span class="traffic-info">过去已用</span>
-                                            <code class="card-tag tag-orange">{$user->LastusedTraffic()}</code>
+                                            <code class="card-tag tag-orange">{$user->lastUsedTraffic()}</code>
                                         </div>
                                     </div>
                                 </div>
@@ -576,7 +576,7 @@
                                             </div>
                                             <div class="tab-pane fade" id="sub_center_ios">
                                             {if $display_ios_class>=0}
-                                                {if $user->class>=$display_ios_class && $user->get_top_up()>=$display_ios_topup}
+                                                {if $user->class>=$display_ios_class && $user->getTopUp()>=$display_ios_topup}
                                                 <div><span class="icon icon-lg text-white">account_box</span> 本站iOS账户：</div>
                                                 <div class="float-clear">
                                                     <input type="text" class="input form-control form-control-monospace cust-link col-xx-12 col-sm-8 col-lg-7" name="input1" readonly value="{$ios_account}" readonly="true">

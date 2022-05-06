@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-class NodeInfoLog extends Model
+final class NodeInfoLog extends Model
 {
     protected $connection = 'default';
     protected $table = 'node_info';
