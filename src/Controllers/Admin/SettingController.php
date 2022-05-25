@@ -47,7 +47,7 @@ final class SettingController extends BaseController
                 $list = ['vmq_gateway', 'vmq_key'];
                 break;
             case 'payjs_pay':
-                $list = ['payjs_mchid', 'payjs_key'];
+                $list = ['payjs_url','payjs_mchid', 'payjs_key'];
                 break;
             case 'theadpay':
                 $list = ['theadpay_url', 'theadpay_mchid', 'theadpay_key'];
@@ -174,7 +174,7 @@ final class SettingController extends BaseController
         $result = [];
 
         foreach (Payment::getAllPaymentMap() as $payment) {
-            $result[$payment::_readableName()] = $payment::_name();
+            $result[$payment::_name()] = $payment::_name();
         }
 
         return $result;
