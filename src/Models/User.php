@@ -214,7 +214,7 @@ final class User extends Model
                     $code->save();
                     return $temp_code;
                 }
-                return (InviteCode::where('user_id', $this->id)->first())->code;
+                return InviteCode::where('user_id', $this->id)->first()->code;
             }
         }
     }
@@ -673,9 +673,9 @@ final class User extends Model
             if (
                 $_ENV['enable_telegram'] === true
                 &&
-                Config::getconfig('Telegram.bool.group_bound_user') === true
+                Setting::obtain('telegram_group_bound_user') === true
                 &&
-                Config::getconfig('Telegram.bool.unbind_kick_member') === true
+                Setting::obtain('telegram_unbind_kick_member') === true
                 &&
                 ! $this->is_admin
             ) {

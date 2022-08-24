@@ -12,10 +12,10 @@
     <link href="//fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
     <link href="https://cdn.staticfile.org/material-design-lite/1.3.0/material.min.css" rel="stylesheet">
     <link href="https://cdn.staticfile.org/datatables/1.10.19/css/dataTables.material.min.css" rel="stylesheet">
-    <link href="https://cdn.staticfile.org/jsoneditor/9.5.8/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.staticfile.org/jsoneditor/9.9.0/jsoneditor.min.css" rel="stylesheet" type="text/css">
     <!-- js -->
     <script src="https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.staticfile.org/jsoneditor/9.5.8/jsoneditor.min.js"></script>
+    <script src="https://cdn.staticfile.org/jsoneditor/9.9.0/jsoneditor.min.js"></script>
     <!-- favicon -->
     <!-- ... -->
     <style>
@@ -103,7 +103,6 @@
                     <a class="waves-attach" data-toggle="collapse" href="#ui_menu_config">配置</a>
                     <ul class="menu-collapse collapse in" id="ui_menu_config">
                         <li><a href="/admin/setting"><i class="icon icon-lg">settings</i>&nbsp;设置中心</a></li>
-                        <li><a href="/admin/config/telegram"><i class="icon icon-lg">supervisor_account</i>&nbsp;Telegram</a></li>
                     </ul>
                     <a class="waves-attach" data-toggle="collapse" href="#ui_menu_detect">审计</a>
                     <ul class="menu-collapse collapse in" id="ui_menu_detect">
@@ -111,7 +110,7 @@
                         <li><a href="/admin/detect/log"><i class="icon icon-lg">assignment_late</i>&nbsp;审计记录</a></li>
                         <li><a href="/admin/detect/ban"><i class="icon icon-lg">text_fields</i>&nbsp;审计封禁</a></li>
                     </ul>
-                    <a class="waves-attach" data-toggle="collapse" href="#ui_menu_trade">交易</a>
+                    <a class="waves-attach" data-toggle="collapse" href="#ui_menu_trade">财务</a>
                     <ul class="menu-collapse collapse in" id="ui_menu_trade">
                         <li><a href="/admin/code">
                                 <i class="icon icon-lg">code</i>

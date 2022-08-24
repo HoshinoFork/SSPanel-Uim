@@ -49,7 +49,7 @@ return function (SlimApp $app): void {
         $this->get('/shop', App\Controllers\User\ShopController::class . ':shop');
         $this->post('/coupon_check', App\Controllers\User\ShopController::class . ':couponCheck');
         $this->post('/buy', App\Controllers\User\ShopController::class . ':buy');
-        $this->post('/buy_traffic_package', App\User\ShopController\UserController::class . ':buyTrafficPackage');
+        $this->post('/buy_traffic_package', App\Controllers\User\ShopController::class . ':buyTrafficPackage');
 
         $this->get('/ticket', App\Controllers\User\TicketController::class . ':ticket');
         $this->get('/ticket/create', App\Controllers\User\TicketController::class . ':ticketCreate');
@@ -266,15 +266,6 @@ return function (SlimApp $app): void {
         $this->post('/setting', App\Controllers\Admin\SettingController::class . ':save');
         $this->post('/setting/email', App\Controllers\Admin\SettingController::class . ':test');
         $this->post('/setting/payment', App\Controllers\Admin\SettingController::class . ':payment');
-
-        // Config Mange
-        $this->group('/config', function (): void {
-            $this->put('/update/{key}', App\Controllers\Admin\GConfigController::class . ':update');
-            $this->get('/update/{key}/edit', App\Controllers\Admin\GConfigController::class . ':edit');
-
-            $this->get('/telegram', App\Controllers\Admin\GConfigController::class . ':telegram');
-            $this->post('/telegram/ajax', App\Controllers\Admin\GConfigController::class . ':telegramAjax');
-        });
     })->add(new Admin());
 
     if ($_ENV['enableAdminApi']) {
